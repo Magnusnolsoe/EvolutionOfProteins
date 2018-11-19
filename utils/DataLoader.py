@@ -47,9 +47,6 @@ class DataLoader(object):
         outputs = [list(map(float, x)) for x in outputs]
         outputs = np.array(outputs)
         
-        inputs = torch.from_numpy(inputs)
-        outputs = torch.from_numpy(outputs)
-        
         return inputs, outputs
 
     def __exit__(self, exc_type, exc_value, traceback):
