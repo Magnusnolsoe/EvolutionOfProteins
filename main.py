@@ -7,9 +7,13 @@ Created on Mon Nov  5 20:04:19 2018
 
 import os
 import argparse
-
+from model import Net
 
 def main():
+    
+    network = Net(epochs=1, embedding_dim=100, batch_size=2, dataset_name="valid.txt")
+    network.train()
+    '''
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group()
     
@@ -33,7 +37,7 @@ def main():
         
         
         # START TRAINING!
-
+    '''
     
 if __name__ == "__main__":
     main()
