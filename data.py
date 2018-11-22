@@ -76,5 +76,5 @@ class DataLoader(object):
         return torch.stack(padded_inputs), torch.tensor(lengths), targets
     
 
-#d = DataLoader('../valid.txt', batch_size = 3)
+d = DataLoader('../test.txt', batch_size = 3)
 
