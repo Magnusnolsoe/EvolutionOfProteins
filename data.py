@@ -58,11 +58,11 @@ class DataLoader(object):
         self.sort_chunk()
             
     def sort_chunk(self):
-        sorted_data = sorted(zip(self.input_lengths,self.inputs, self.targets), reverse = True)
+        sorted_data = sorted(zip(self.input_lengths, range(len(self.inputs)), self.inputs, self.targets), reverse = True)
         
-        self.input_lengths = [x for x,_,_ in sorted_data]
-        self.inputs = [x for _,x,_ in sorted_data]
-        self.targets = [x for _,_,x in sorted_data]
+        self.input_lengths = [x for x,_,_,_ in sorted_data]
+        self.inputs = [x for _,_,x,_ in sorted_data]
+        self.targets = [x for _,_,_,x in sorted_data]
     
     def pad_input_sequence(self, inputs, targets, lengths):
         
@@ -76,5 +76,5 @@ class DataLoader(object):
         return torch.stack(padded_inputs), torch.tensor(lengths), targets
     
 
-#d = DataLoader('../valid.txt', batch_size = 3)
+d = DataLoader('data/valid.txt', batch_size = 3)
 
