@@ -53,7 +53,7 @@ class DataLoader(object):
                 self.input_lengths.append(len(inputs))
                 self.targets.append(outputs)
             
-            self.file.close()   
+            file.close()   
             
         self.sort_chunk()
             
@@ -75,7 +75,6 @@ class DataLoader(object):
         
         return torch.stack(padded_inputs), torch.tensor(lengths), targets
     
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.file.close()
 
+#d = DataLoader('../valid.txt', batch_size = 3)
 
