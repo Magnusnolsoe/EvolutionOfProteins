@@ -7,12 +7,40 @@ Created on Mon Nov  5 20:04:19 2018
 
 import os
 import argparse
+
 from model import Net
+from data import DataLoader, DataIterator
 
 def main():
     
-    network = Net(epochs=1, embedding_dim=100, batch_size=2, dataset_name="valid.txt")
-    network.train()
+    net = Net(epochs=1, embedding_dim=100, dataset_name="valid.txt")
+    
+    
+    data_loader = DataLoader("valid.txt")
+    data_loader.load_data()
+    
+    X_train, X_test, y_train, y_test, seq_train, seq_test = data_loader.split()
+    
+    X_train, y_train, seq_train = data_loader.sort_data(X_train, y_train, seq_train)
+    
+    train_iter = DataIterator(X_train, y_train, seq_train, batch_size=64)
+    
+    for epoch in range(1):
+        
+        batch_x, batch_seq_len, batch_t = next(train_iter)
+        
+        
+        prediction = net(batch_x, batch_seq_len)
+        '''
+        print(prediction)
+        print(prediction.shape)
+        '''
+        total = 0
+        for t in batch_t:
+            
+            total += t.shape[0]
+        print(total)
+        print(prediction.shape[0])
     '''
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group()
