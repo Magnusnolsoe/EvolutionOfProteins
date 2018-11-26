@@ -6,8 +6,7 @@ class Net(nn.Module):
     def __init__(self, num_embeddings=21, embedding_dim=32,
                  rnn_hidden_size=100, rnn_layers=2, rnn_dropout=0.3,
                  ffnn_out=20, ffnn_dropout=0.5,
-                 batch_size=64, epochs=0,
-                 dataset_name=None, data_dir="data/"):
+                 batch_size=64, epochs=0):
         super(Net, self).__init__()
 
         self.num_epochs = epochs
