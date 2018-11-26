@@ -8,13 +8,17 @@ from data import DataLoader, DataIterator
 from utils import target_to_tensor
 
 def train():
-    
+
     net = Net(epochs=1, embedding_dim=100)
-    
+    cuda = torch.cuda.is_available()
+
+    if cuda:
+        net.cuda()
+
     optimizer = optim.Adam(net.parameters(), lr=0.0001)
     criterion = nn.MSELoss()
     
-    data_loader = DataLoader("testSample.txt")
+    data_loader = DataLoader("sample.txt")
     data_loader.load_data()
     
     X_train, X_test, y_train, y_test, seq_train, seq_test = data_loader.split()
@@ -28,13 +32,17 @@ def train():
             
             for batch_x, batch_seq_len, batch_t in train_iter:
                 
-                predictions = net(batch_x, batch_seq_len)
                 targets = target_to_tensor(batch_t)
-                
-                print(predictions.shape)
-                print(targets.shape)
+
+                if cuda:
+                    batch_x = batch_x.cuda()
+                    targets = targets.cuda()
+
+                predictions = net(batch_x, batch_seq_len)
                 
                 batch_loss = criterion(predictions, targets)
 
                 batch_loss.backward()
                 optimizer.step()
+
+                print(batch_loss)
