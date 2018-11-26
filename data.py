@@ -3,8 +3,6 @@ import torch
 
 from sklearn.model_selection import train_test_split
 
-import progressbar
-
 class DataIterator(object):
     def __init__(self, inputs, targets, sequence_lengths,
                  batch_size=0, pad_sequences=True):
@@ -56,47 +54,42 @@ class DataIterator(object):
 
 
 class DataLoader(object):
-	def __init__(self, dataset, data_dir = "data/"):
-		self.data_dir = data_dir
-		self.dataset = dataset
-		self.inputs = []
-		self.targets = []
-		self.sequence_lengths = []
+    def __init__(self, dataset, data_dir = "data/"):
+        self.data_dir = data_dir
+        self.dataset = dataset
+        self.inputs = []
+        self.targets = []
+        self.sequence_lengths = []
+        
+    def load_data(self):
+        path = os.path.join(self.data_dir, self.dataset)
+        with open(path, 'r') as file:
+            for line in file:
+                inputs = line.split("\t")[0]
+                outputs = line.split("\t")[1]
+                inputs = inputs.split(",")
+                inputs = list(map(int, inputs))
+                inputs = torch.tensor(inputs, dtype=torch.long)
+                outputs = outputs.split(",")
+                outputs = [x.split(" ") for x in outputs]
+                outputs = [list(map(float, x)) for x in outputs]
+                outputs = torch.tensor(outputs, dtype=torch.float)
+                self.inputs.append(inputs)
+                self.sequence_lengths.append(len(inputs))
+                self.targets.append(outputs)
+            
+            file.close()   
 
-	def load_data(self):
-		print("Loading data:")
-		bar = progressbar.ProgressBar(max_value=progressbar.UnknownLength).start()
-		bar_counter = 0
-		path = os.path.join(self.data_dir, self.dataset)
-		with open(path, 'r') as file:
-			for line in file:
-				inputs = line.split("\t")[0]
-				outputs = line.split("\t")[1]
-				inputs = inputs.split(",")
-				inputs = list(map(int, inputs))
-				inputs = torch.tensor(inputs, dtype=torch.long)
-				outputs = outputs.split(",")
-				outputs = [x.split(" ") for x in outputs]
-				outputs = [list(map(float, x)) for x in outputs]
-				outputs = torch.tensor(outputs, dtype=torch.float)
-				self.inputs.append(inputs)
-				self.sequence_lengths.append(len(inputs))
-				self.targets.append(outputs)
-
-				bar_counter += 1
-				bar.update(bar_counter)
-
-
-	def sort_data(self, inputs, targets, seq_lengths):
-		sorted_data = sorted(zip(seq_lengths, range(len(inputs)), inputs, targets), reverse = True)
-
-		i = [x for _,_,x,_ in sorted_data]
-		t = [x for _,_,_,x in sorted_data]            
-		seq_len = [x for x,_,_,_ in sorted_data]
-		return i, t, seq_len
-
-	def split(self, split_rate=0.33):
-		X_train, X_test, y_train, y_test, seq_train, seq_test = train_test_split(self.inputs, self.targets, self.sequence_lengths,
-																											test_size=split_rate)
-		return X_train, X_test, y_train, y_test, seq_train, seq_test
+    def sort_data(self, inputs, targets, seq_lengths):
+            sorted_data = sorted(zip(seq_lengths, range(len(inputs)), inputs, targets), reverse = True)
+            
+            i = [x for _,_,x,_ in sorted_data]
+            t = [x for _,_,_,x in sorted_data]            
+            seq_len = [x for x,_,_,_ in sorted_data]
+            return i, t, seq_len
+            
+    def split(self, split_rate=0.33):
+        X_train, X_test, y_train, y_test, seq_train, seq_test = train_test_split(self.inputs, self.targets, self.sequence_lengths,
+                                                                                 test_size=split_rate)
+        return X_train, X_test, y_train, y_test, seq_train, seq_test
 
