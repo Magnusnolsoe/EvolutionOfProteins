@@ -5,13 +5,8 @@ from torch.nn.utils.rnn import pack_padded_sequence
 class Net(nn.Module):
     def __init__(self, num_embeddings=21, embedding_dim=32,
                  rnn_hidden_size=100, rnn_layers=2, rnn_dropout=0.3,
-                 ffnn_out=20, ffnn_dropout=0.5,
-                 batch_size=64, epochs=0):
+                 ffnn_out=20, ffnn_dropout=0.5):
         super(Net, self).__init__()
-
-        self.num_epochs = epochs
-        
-        self.batch_size = batch_size
         
         self.embedding = nn.Embedding(num_embeddings, embedding_dim)
         
@@ -26,13 +21,14 @@ class Net(nn.Module):
         
     def forward(self, batch, seq_lengths):
         
+        
         embedded_batch = self.embedding(batch)
         
         packed = pack_padded_sequence(embedded_batch, seq_lengths, batch_first=True)
         
         rnn_out, (h_n, c_n) = self.LSTM(packed)
         x = rnn_out.data
-        
+
         x = self.dropout(x)
         x = self.FFNN(x)
         

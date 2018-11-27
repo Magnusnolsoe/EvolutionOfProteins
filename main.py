@@ -9,6 +9,7 @@ import os
 import argparse
 
 from train import train
+
 def main():
     
     
@@ -39,7 +40,7 @@ def main():
         
         
         # START TRAINING!
-    '''
+    ''' 
     
 if __name__ == "__main__":
     main()
