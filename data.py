@@ -91,5 +91,5 @@ class DataLoader(object):
     def split(self, split_rate=0.33):
         X_train, X_test, y_train, y_test, seq_train, seq_test = train_test_split(self.inputs, self.targets, self.sequence_lengths,
                                                                                  test_size=split_rate)
-        return X_train, X_test, y_train, y_test, seq_train, seq_test
+        return (X_train, X_test), (y_train, y_test), (seq_train, seq_test)
 

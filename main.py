@@ -13,7 +13,7 @@ from train import train
 def main():
     
     
-    train()
+    train(epochs=10, batch_size=64, dataset="valid.txt")
         
 
     '''
