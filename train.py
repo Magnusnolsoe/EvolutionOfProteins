@@ -12,7 +12,7 @@ def train(path="", epochs=1, batch_size=16):
     net = Net(embedding_dim=100)
     
     optimizer = optim.Adam(net.parameters(), lr=0.0001)
-    criterion = custom_cross_entropy()
+    criterion = custom_cross_entropy
     
     data_loader = DataLoader(path)
     
@@ -31,8 +31,7 @@ def train(path="", epochs=1, batch_size=16):
                 
                 b_size = batch_x.shape[0]
                 
-                batch_loss = criterion(b_size, splitted,
-                                                  batch_t, batch_seq_len)
+                batch_loss = criterion(splitted, batch_t, batch_seq_len)
                 print(batch_loss)
                 batch_loss.backward()
                 optimizer.step()
