@@ -1,6 +1,5 @@
 import torch
 from torch import t as T
-from torch.autograd import Variable
 
 def target_to_tensor(batch_targets):
     
@@ -33,7 +32,7 @@ def build_mask(seq_lengths):
         
     return torch.stack(mask)
 
-def custom_cross_entropy(batch_size, batch_y, batch_t, seq_len):
+def custom_cross_entropy(batch_y, batch_t, seq_len):
     
     y_padded = pad_targets(batch_y, seq_len)
     t_padded = pad_targets(batch_t, seq_len)
@@ -42,14 +41,11 @@ def custom_cross_entropy(batch_size, batch_y, batch_t, seq_len):
     
     threshold=0.0000001
     
-    CEs = (-(y_padded * torch.log(t_padded+threshold))).sum(2)
+    CEs = (-(t_padded * torch.log(y_padded+threshold))).sum(2)
     
     seq_avg = ((CEs)*mask).sum(1) / mask.sum(1)
 
-    batch_error = seq_avg.sum(0) / batch_size
+    batch_error = seq_avg.mean(0)
     
     return batch_error
-    
-    
-    
-    
+
