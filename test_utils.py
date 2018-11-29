@@ -29,7 +29,7 @@ class testUtils(unittest.TestCase):
         correct_mask = [[1,1,1],[1,1,0]]
         self.assertAlmostEqual((build_mask(seq_lengths)).tolist(), correct_mask)
         
-        #no padding
+    def test_build_mask_no_padding(self):
         seq_lengths = [3,3]
         correct_mask = [[1,1,1],[1,1,1]]
         self.assertAlmostEqual((build_mask(seq_lengths)).tolist(), correct_mask)
