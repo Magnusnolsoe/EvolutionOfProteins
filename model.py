@@ -31,6 +31,6 @@ class Net(nn.Module):
 
         x = self.dropout(x)
         x = self.FFNN(x)
-        
+        print(x.shape)
         return self.activation(x)
     

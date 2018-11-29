@@ -44,6 +44,7 @@ class DataIterator(object):
     def pad_input_sequence(self, inputs, targets, lengths):
         
         max_length = len(inputs[0])
+        print(max_length)
         padded_inputs = []
         for x in inputs:
             seq_len = len(x)
