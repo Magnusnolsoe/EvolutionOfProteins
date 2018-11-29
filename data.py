@@ -1,4 +1,3 @@
-import os
 import torch
 
 from sklearn.model_selection import train_test_split
@@ -54,16 +53,26 @@ class DataIterator(object):
 
 
 class DataLoader(object):
-    def __init__(self, dataset, data_dir = "data/"):
-        self.data_dir = data_dir
-        self.dataset = dataset
+    def __init__(self, path=""):
+        self.path = path
         self.inputs = []
         self.targets = []
         self.sequence_lengths = []
         
+    def run_pipline(self, split_rate=0.33):
+        
+        self.load_data()
+        
+        X_train, X_test, y_train, y_test, seq_train, seq_test = self.split(split_rate)
+        
+        X_train_sorted, y_train_sorted, seq_train_sorted = self.sort_data(X_train, y_train, seq_train)
+        X_test_sorted, y_test_sorted, seq_test_sorted = self.sort_data(X_test, y_test, seq_test)
+        
+        return (X_train_sorted, X_test_sorted), (y_train_sorted, y_test_sorted), (seq_train_sorted, seq_test_sorted)
+        
+        
     def load_data(self):
-        path = os.path.join(self.data_dir, self.dataset)
-        with open(path, 'r') as file:
+        with open(self.path, 'r') as file:
             for line in file:
                 inputs = line.split("\t")[0]
                 outputs = line.split("\t")[1]
@@ -91,5 +100,6 @@ class DataLoader(object):
     def split(self, split_rate=0.33):
         X_train, X_test, y_train, y_test, seq_train, seq_test = train_test_split(self.inputs, self.targets, self.sequence_lengths,
                                                                                  test_size=split_rate)
-        return (X_train, X_test), (y_train, y_test), (seq_train, seq_test)
+        
+        return X_train, X_test, y_train, y_test, seq_train, seq_test
 

@@ -12,10 +12,10 @@ from train import train
 
 def main():
     
+    path = os.path.join("data", "valid.txt")
     
-    train(epochs=10, batch_size=64, dataset="valid.txt")
+    train(path=path, epochs=10, batch_size=64)
         
-
     '''
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group()
@@ -40,7 +40,7 @@ def main():
         
         
         # START TRAINING!
-    ''' 
+    '''
     
 if __name__ == "__main__":
     main()
