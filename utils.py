@@ -19,10 +19,11 @@ def pad_targets(batch, seq_lengths):
         padded_batch.append(T(torch.nn.functional.pad(T(profile),
                                                       (0, max_len-seq_len),
                                                       value=1)))
-        
+
     return torch.stack(padded_batch)
         
 def build_mask(seq_lengths):
+    #assumes sorted lengths 
     max_len = max(seq_lengths)
     mask = []
     for seq_len in seq_lengths:
@@ -39,7 +40,7 @@ def custom_cross_entropy(batch_y, batch_t, seq_len):
     
     mask = build_mask(seq_len)
     
-    threshold=0.0000001
+    threshold=0.00000000000001
     
     CEs = (-(t_padded * torch.log(y_padded+threshold))).sum(2)
     
