@@ -1,40 +1,69 @@
 import torch
+import matplotlib.pyplot as plt
 
-import torch.optim as optim
-import torch.nn as nn
-
-from model import Net
 from data import DataLoader, DataIterator
-from utils import custom_cross_entropy
+from utils import pad_predictions
 
-def train(path="", epochs=1, batch_size=16):
+def train(data_path, net, optimizer, criterion, device, epochs, batch_size):
     
-    net = Net(embedding_dim=100)
-    
-    optimizer = optim.Adam(net.parameters(), lr=0.0001)
-    criterion = custom_cross_entropy
-    
-    data_loader = DataLoader(path)
+    data_loader = DataLoader(data_path)
     
     X, y, seq = data_loader.run_pipline()
     
-    train_iter = DataIterator(X[0], y[0], seq[0], batch_size=batch_size, pad_sequences=True)
+    train_iter = DataIterator(X[0], y[0], seq[0], batch_size=batch_size)
+    test_iter = DataIterator(X[1], y[1], seq[1], batch_size=batch_size)
     
+    train_err, test_err = [], []
     
     for epoch in range(epochs):
+            print(epoch)
             
-            for batch_x, batch_seq_len, batch_t in train_iter:
+            ### TRAIN LOOP ###
+            err = []
+            net.train()
+            for proteins, sequence_lengths, targets in train_iter:
                 
-                predictions = net(batch_x, batch_seq_len)
+                inputs = proteins.to(device)
+                seq_lens = sequence_lengths.to(device)
                 
-                splitted = torch.split(predictions, batch_seq_len.tolist())
+                predictions = net(inputs, seq_lens)                
+                predictions = torch.split(predictions, seq_lens.tolist())
                 
-                b_size = batch_x.shape[0]
+                padded_pred = pad_predictions(predictions, seq_lens)
+                padded_pred = padded_pred.to(device)
+                targets = targets.to(device)
                 
-                batch_loss = criterion(splitted, batch_t, batch_seq_len)
-                print(batch_loss)
+                batch_loss = criterion(padded_pred, targets, seq_lens, device)
                 batch_loss.backward()
                 optimizer.step()
                 
+                err.append(batch_loss.cpu().item())
+                print(batch_loss)
                 
+            train_err.append(sum(err) / len(err))
+                
+            ### TEST LOOP ###
+            err = []
+            net.eval()
+            for proteins, sequence_lengths, targets in test_iter:
+                
+                inputs = proteins.to(device)
+                seq_lens = sequence_lengths.to(device)
+                
+                predictions = net(inputs, seq_lens)                
+                predictions = torch.split(predictions, seq_lens.tolist())
+                
+                padded_pred = pad_predictions(predictions, seq_lens)
+                padded_pred = padded_pred.to(device)
+                targets = targets.to(device)
+                
+                batch_loss = criterion(padded_pred, targets, seq_lens, device)
+                
+                err.append(batch_loss.cpu().item())
+                
+            test_err.append(sum(err) / len(err))
+            
+    plt.plot(train_err, 'ro-', label="train error")
+    plt.plot(test_err, 'bo-', label="test error")
+    
                 

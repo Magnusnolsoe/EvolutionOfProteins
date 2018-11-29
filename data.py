@@ -1,5 +1,6 @@
 import torch
 
+from torch import t as T
 from sklearn.model_selection import train_test_split
 
 class DataIterator(object):
@@ -35,22 +36,32 @@ class DataIterator(object):
         self.data_pointer += self.batch_size
         
         if (self.pad_sequences):
-            return self.pad_input_sequence(inputs_batch, targets_batch, seq_len_batch)
+            padded_inputs = self.pad_input_sequence(inputs_batch, seq_len_batch)
+            padded_targets = self.pad_targets(targets_batch, seq_len_batch)
+            return torch.stack(padded_inputs), torch.tensor(seq_len_batch, dtype=torch.int), torch.stack(padded_targets)
         
-        return torch.stack(inputs_batch), torch.stack(seq_len_batch), targets_batch
+        return torch.stack(inputs_batch), torch.tensor(seq_len_batch, dtype=torch.int), targets_batch
     
     
-    def pad_input_sequence(self, inputs, targets, lengths):
+    def pad_input_sequence(self, inputs, lengths):
         
-        max_length = len(inputs[0])
-        print(max_length)
-        padded_inputs = []
+        max_length = lengths[0]
+        padded = []
         for x in inputs:
             seq_len = len(x)
-            padded_inputs.append(torch.nn.functional.pad(x, (0, max_length-seq_len), mode='constant', value=20))
-
-        
-        return torch.stack(padded_inputs), torch.tensor(lengths), targets
+            padded.append(torch.nn.functional.pad(x, (0, max_length-seq_len), mode='constant', value=20))
+            
+        return padded
+    
+    def pad_targets(self, targets, lengths):
+    
+        max_length = lengths[0]
+        padded = []
+        for profile, seq_len in zip(targets, lengths):
+            padded.append(T(torch.nn.functional.pad(
+                            T(profile), (0, max_length-seq_len), value=1)))
+            
+        return padded
 
 
 class DataLoader(object):
