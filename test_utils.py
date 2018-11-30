@@ -1,6 +1,6 @@
 import unittest
 import torch
-from utils import custom_cross_entropy, build_mask,pad_targets
+from utils import custom_cross_entropy, build_mask, pad_predictions
 
 class testUtils(unittest.TestCase):
     def setUp(self):
@@ -16,13 +16,18 @@ class testUtils(unittest.TestCase):
         self.batchEqualLen = [self.target2,self.target3]
         self.seqlengthsEqualLen = torch.tensor([2,2])
         
+        self.device = torch.device('cpu')
+        
     def test_crossEntropy(self):
         
         
         
         correctLoss = 0.5942626962
         
-        self.assertAlmostEqual((custom_cross_entropy(self.batchy, self.batcht,self.seqlengths)).item(), correctLoss)
+        self.batchy = pad_predictions(self.batchy, self.seqlengths)
+        self.batcht = pad_predictions(self.batcht, self.seqlengths)
+        
+        self.assertAlmostEqual((custom_cross_entropy(self.batchy, self.batcht,self.seqlengths,self.device)).item(), correctLoss)
         
     def test_build_mask(self):
         seq_lengths = [3,2]
@@ -40,13 +45,13 @@ class testUtils(unittest.TestCase):
         padded2 = [[0.2, 0.8],[0.3,0.7],[1.0,1.0]]
         correct_padded = torch.tensor([padded1,padded2])
 
-        for profile, correct_profile in zip(pad_targets(self.batcht, self.seqlengths),correct_padded):
+        for profile, correct_profile in zip(pad_predictions(self.batcht, self.seqlengths),correct_padded):
             for position, correct_position in zip(profile, correct_profile):
                 for acid,correct in zip(position,correct_position):
                     self.assertAlmostEqual(acid, correct)
                     
     def test_no_pad_targets(self):
-        for profile, correct_profile in zip(pad_targets(self.batchEqualLen, self.seqlengthsEqualLen),self.batchEqualLen):
+        for profile, correct_profile in zip(pad_predictions(self.batchEqualLen, self.seqlengthsEqualLen),self.batchEqualLen):
             for position, correct_position in zip(profile, correct_profile):
                 for acid,correct in zip(position,correct_position):
                     self.assertAlmostEqual(acid, correct)

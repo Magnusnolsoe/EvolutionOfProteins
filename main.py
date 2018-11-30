@@ -67,6 +67,7 @@ def main():
         
         train(data_path, net, optimizer, criterion, device, args.epoch, args.batch_size)
         
+        torch.save(net.state_dict(), "models/")
         # START TRAINING!
     
 if __name__ == "__main__":

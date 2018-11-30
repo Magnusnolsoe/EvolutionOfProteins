@@ -1,6 +1,12 @@
 import torch
 from torch import t as T
 
+def get_num_lines(fname):
+    with open(fname) as f:
+        for i, l in enumerate(f):
+            pass
+    return i + 1
+
 def pad_predictions(batch, seq_lengths):
     
     max_len = seq_lengths[0]

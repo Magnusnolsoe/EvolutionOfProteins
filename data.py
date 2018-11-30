@@ -1,7 +1,9 @@
 import torch
 
+from tqdm import tqdm
 from torch import t as T
 from sklearn.model_selection import train_test_split
+from utils import get_num_lines
 
 class DataIterator(object):
     def __init__(self, inputs, targets, sequence_lengths,
@@ -71,7 +73,7 @@ class DataLoader(object):
         self.targets = []
         self.sequence_lengths = []
         
-    def run_pipline(self, split_rate=0.33):
+    def run_pipline(self, split_rate):
         
         self.load_data()
         
@@ -85,7 +87,7 @@ class DataLoader(object):
         
     def load_data(self):
         with open(self.path, 'r') as file:
-            for line in file:
+            for line in tqdm(file, ascii=True, desc="Loading Data", total=get_num_lines(self.path)):
                 inputs = line.split("\t")[0]
                 outputs = line.split("\t")[1]
                 inputs = inputs.split(",")

@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 from data import DataLoader, DataIterator
 from utils import pad_predictions
 
-def train(data_path, net, optimizer, criterion, device, epochs, batch_size):
+def train(data_path, net, optimizer, criterion, device, epochs, batch_size, split_rate=0.33):
     
     data_loader = DataLoader(data_path)
     
-    X, y, seq = data_loader.run_pipline()
+    X, y, seq = data_loader.run_pipline(split_rate)
     
     train_iter = DataIterator(X[0], y[0], seq[0], batch_size=batch_size)
     test_iter = DataIterator(X[1], y[1], seq[1], batch_size=batch_size)
@@ -16,7 +16,6 @@ def train(data_path, net, optimizer, criterion, device, epochs, batch_size):
     train_err, test_err = [], []
     
     for epoch in range(epochs):
-            print(epoch)
             
             ### TRAIN LOOP ###
             err = []
@@ -38,7 +37,6 @@ def train(data_path, net, optimizer, criterion, device, epochs, batch_size):
                 optimizer.step()
                 
                 err.append(batch_loss.cpu().item())
-                print(batch_loss)
                 
             train_err.append(sum(err) / len(err))
                 
@@ -62,8 +60,8 @@ def train(data_path, net, optimizer, criterion, device, epochs, batch_size):
                 err.append(batch_loss.cpu().item())
                 
             test_err.append(sum(err) / len(err))
-            
+
     plt.plot(train_err, 'ro-', label="train error")
     plt.plot(test_err, 'bo-', label="test error")
-    
+    plt.show()
                 
