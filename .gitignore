@@ -106,3 +106,5 @@ venv.bak/
 # User specified
 data/
 .DS_Store
+results/
+*.png

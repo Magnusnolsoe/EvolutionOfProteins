@@ -2,14 +2,13 @@ import torch
 import matplotlib.pyplot as plt
 
 from tqdm import tqdm
-from data import DataLoader, DataIterator
+from data import DataIterator
 from utils import pad_predictions
+import pickle
 
-def train(data_path, net, optimizer, criterion, device, epochs, batch_size, split_rate=0.33):
-    
-	data_loader = DataLoader(data_path)
-
-	X, y, seq = data_loader.run_pipline(split_rate)
+def train(data, net, optimizer, criterion, device, epochs, batch_size):
+	
+	X, y, seq = data
 
 	train_iter = DataIterator(X[0], y[0], seq[0], batch_size=batch_size)
 	test_iter = DataIterator(X[1], y[1], seq[1], batch_size=batch_size)
@@ -36,6 +35,8 @@ def train(data_path, net, optimizer, criterion, device, epochs, batch_size, spli
 			targets = targets.to(device)
 
 			batch_loss = criterion(padded_pred, targets, seq_lens, device)
+
+			optimizer.zero_grad()
 			batch_loss.backward()
 			optimizer.step()
 
@@ -48,7 +49,7 @@ def train(data_path, net, optimizer, criterion, device, epochs, batch_size, spli
         ### TEST LOOP ###
 		err = []
 		net.eval()
-		for proteins, sequence_lengths, targets in tqdm(test_iter, ascii=True, desc="Testing", total=int(len(X[1]) / batch_size)):
+		for proteins, sequence_lengths, targets in tqdm(test_iter, ascii=False, desc="Testing", total=int(len(X[1]) / batch_size), unit="batch"):
             
 			inputs = proteins.to(device)
 			seq_lens = sequence_lengths.to(device)
@@ -70,7 +71,14 @@ def train(data_path, net, optimizer, criterion, device, epochs, batch_size, spli
 		print("Training error: " + str(epoch_trainig_error))
 		print("Test error: " + str(epoch_test_error))
 
-    # plt.plot(train_err, 'ro-', label="train error")
-    # plt.plot(test_err, 'bo-', label="test error")
-    # plt.show()
+	final_results = [train_err, test_err]
+	file_name = "results/Emb=" + str(net.embedding_dim) + "-lstm_layer=" + str(net.num_layers) + "-lstm_size=" + str(net.rnn_hidden_size) + ".pk"
+	pickle.dump(final_results, open(file_name, "wb"))
+
+#	plt.plot(train_err, 'ro-', label="train error")
+#	plt.plot(test_err, 'bo-', label="test error")
+#	plt.legend()
+#	plt.title("Emb=" + str(net.embedding_dim) + ", lstm_layer=" + str(net.num_layers) + ", lstm_size=" + str(net.rnn_hidden_size))
+#	plt.savefig("Emb=" + str(net.embedding_dim) + ", lstm_layer=" + str(net.num_layers) + ", lstm_size=" + str(net.rnn_hidden_size) + ".png")
+	#plt.show()
                 

@@ -8,11 +8,14 @@ class Net(nn.Module):
                  linear_out=20, linear_dropout=0.5):
         super(Net, self).__init__()
         
+        self.embedding_dim = embedding_dim
+
         self.embedding = nn.Embedding(num_embeddings, embedding_dim)
         
         self.rnn_hidden_size = rnn_hidden_size
         self.num_layers = rnn_layers
         self.directions= 2 if bi_dir else 1
+        rnn_dropout = rnn_dropout if rnn_layers > 1 else 0
         
         self.LSTM = nn.LSTM(embedding_dim, hidden_size=rnn_hidden_size, num_layers=rnn_layers,
                            batch_first=True, dropout=rnn_dropout, bidirectional=bi_dir)

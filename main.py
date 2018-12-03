@@ -13,6 +13,7 @@ import torch.optim as optim
 from train import train
 from utils import custom_cross_entropy
 from model import Net
+from data import DataLoader
 
 def main():
         
@@ -35,7 +36,7 @@ def main():
     # Training parameters
     parser.add_argument("--epoch", help="number of epochs in training", type=int, default=1)
     parser.add_argument("--batch_size", help="size of batch in training", type=int, default=16)
-    parser.add_argument("-lr", "--learning_rate", help="learning rate of optimizer", type=float, default=1e-4)
+    parser.add_argument("-lr", "--learning_rate", help="learning rate of optimizer", type=float, default=3e-5)
     parser.add_argument("--embedding_dim", help="dimension of embeddings", type=int, default=32)
     parser.add_argument("--rnn_layers", help="number of layers in RNN", type=int, default=2)
     parser.add_argument("--rnn_size", help="size of hidden units in RNN", type=int, default=100)
@@ -57,16 +58,30 @@ def main():
         
         device = torch.device("cuda" if args.gpu and torch.cuda.is_available() else "cpu")
         print("Device in use:", device)
+       
+        data_loader = DataLoader(data_path)
+        split_rate = 0.33
+        X, y, seq = data_loader.run_pipline(split_rate)
+
+        lstm_layers = [1, 2, 3]
+        embeddings_size = [32, 64, 128, 256, 512, 1024]
+        lstm_size = embeddings_size
         
-        net = Net(embedding_dim=args.embedding_dim,
-              rnn_hidden_size=args.rnn_size, rnn_layers=args.rnn_layers, rnn_dropout=args.rnn_dropout,
-              linear_out=args.linear_units, linear_dropout=args.dropout).to(device)
-        
-        optimizer = optim.Adam(net.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
         criterion = custom_cross_entropy
+
+        for lstm_layer in lstm_layers:
+            for emb_size in embeddings_size:
+                for lstm_layer_size in lstm_size:
+
+                    net = Net(embedding_dim=emb_size,
+                          rnn_hidden_size=lstm_layer_size, rnn_layers=lstm_layer, rnn_dropout=args.rnn_dropout,
+                          linear_out=args.linear_units, linear_dropout=args.dropout).to(device)
+                    
+                    optimizer = optim.Adam(net.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
+                    
+                    train((X,y,seq), net, optimizer, criterion, device, args.epoch, args.batch_size)
         
-        train(data_path, net, optimizer, criterion, device, args.epoch, args.batch_size)
-        
+
         #torch.save(net.state_dict(), "models/")
         # START TRAINING!
     
