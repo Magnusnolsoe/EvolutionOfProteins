@@ -87,7 +87,7 @@ class DataLoader(object):
         
     def load_data(self):
         with open(self.path, 'r') as file:
-            for line in tqdm(file, ascii=True, desc="Loading Data", total=get_num_lines(self.path)):
+            for line in tqdm(file, ascii=True, desc="Loading Data", total=get_num_lines(self.path), unit="lines"):
                 inputs = line.split("\t")[0]
                 outputs = line.split("\t")[1]
                 inputs = inputs.split(",")
@@ -100,8 +100,6 @@ class DataLoader(object):
                 self.inputs.append(inputs)
                 self.sequence_lengths.append(len(inputs))
                 self.targets.append(outputs)
-            
-            file.close()   
 
     def sort_data(self, inputs, targets, seq_lengths):
             sorted_data = sorted(zip(seq_lengths, range(len(inputs)), inputs, targets), reverse = True)
