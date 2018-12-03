@@ -29,13 +29,10 @@ def train(data_path, net, optimizer, criterion, device, epochs, batch_size, spli
 			seq_lens = sequence_lengths.to(device)
 
 			predictions = net(inputs, seq_lens)                
-			predictions = torch.split(predictions, seq_lens.tolist())
-
-			padded_pred = pad_predictions(predictions, seq_lens)
-			padded_pred = padded_pred.to(device)
+			
 			targets = targets.to(device)
 
-			batch_loss = criterion(padded_pred, targets, seq_lens, device)
+			batch_loss = criterion(predictions, targets, seq_lens, device)
 			batch_loss.backward()
 			optimizer.step()
 
@@ -53,14 +50,10 @@ def train(data_path, net, optimizer, criterion, device, epochs, batch_size, spli
 			inputs = proteins.to(device)
 			seq_lens = sequence_lengths.to(device)
 
-			predictions = net(inputs, seq_lens)                
-			predictions = torch.split(predictions, seq_lens.tolist())
-
-			padded_pred = pad_predictions(predictions, seq_lens)
-			padded_pred = padded_pred.to(device)
+			predictions = net(inputs, seq_lens)      
 			targets = targets.to(device)
 
-			batch_loss = criterion(padded_pred, targets, seq_lens, device)
+			batch_loss = criterion(predictions, targets, seq_lens, device)
 
 			err.append(batch_loss.cpu().item())
 
