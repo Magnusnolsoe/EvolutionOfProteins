@@ -58,7 +58,7 @@ def main():
         device = torch.device("cuda" if args.gpu and torch.cuda.is_available() else "cpu")
         print("Device in use:", device)
         
-        net = Net(embedding_dim=args.embedding_dim,
+        net = Net(device, embedding_dim=args.embedding_dim,
               rnn_hidden_size=args.rnn_size, rnn_layers=args.rnn_layers, rnn_dropout=args.rnn_dropout,
               linear_out=args.linear_units, linear_dropout=args.dropout).to(device)
         

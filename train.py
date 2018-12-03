@@ -45,7 +45,7 @@ def train(data_path, net, optimizer, criterion, device, epochs, batch_size, spli
         ### TEST LOOP ###
 		err = []
 		net.eval()
-		for proteins, sequence_lengths, targets in tqdm(test_iter, ascii=True, desc="Testing", total=int(len(X[1]) / batch_size)):
+		for proteins, sequence_lengths, targets in tqdm(test_iter, ascii=False, desc="Testing", total=int(len(X[1]) / batch_size), unit="batch"):
             
 			inputs = proteins.to(device)
 			seq_lens = sequence_lengths.to(device)
