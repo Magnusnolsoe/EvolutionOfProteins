@@ -73,7 +73,7 @@ def main():
             for emb_size in embeddings_size:
                 for lstm_layer_size in lstm_size:
 
-                    net = Net(embedding_dim=emb_size,
+                    net = Net(device, embedding_dim=emb_size,
                           rnn_hidden_size=lstm_layer_size, rnn_layers=lstm_layer, rnn_dropout=args.rnn_dropout,
                           linear_out=args.linear_units, linear_dropout=args.dropout).to(device)
                     

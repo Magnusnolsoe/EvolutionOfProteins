@@ -35,9 +35,9 @@ def custom_cross_entropy(batch_pred, batch_target, seq_len, device):
     mask = build_mask(seq_len)
     mask = mask.to(device)
     
-    threshold=0.00000000000001
+    epsilon= 1E-8
     
-    CEs = (-(batch_target * torch.log(batch_pred+threshold))).sum(2)
+    CEs = (-(batch_target * torch.log(batch_pred+epsilon))).sum(2)
     
     seq_avg = ((CEs)*mask).sum(1) / mask.sum(1)
 
