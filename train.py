@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 from tqdm import tqdm
 from data import DataLoader, DataIterator
-from utils import pad_predictions
+from utils import build_mask
 
 def train(data_path, net, optimizer, criterion, device, epochs, batch_size, split_rate=0.33):
     
@@ -27,12 +27,13 @@ def train(data_path, net, optimizer, criterion, device, epochs, batch_size, spli
             
 			inputs = proteins.to(device)
 			seq_lens = sequence_lengths.to(device)
+            
 
 			predictions = net(inputs, seq_lens)                
 			
-			targets = targets.to(device)
+			targets = targets.to(device); mask = build_mask(sequence_lengths).to(device)
 
-			batch_loss = criterion(predictions, targets, seq_lens, device)
+			batch_loss = criterion(predictions, targets, mask)
 			batch_loss.backward()
 			optimizer.step()
 
@@ -51,9 +52,9 @@ def train(data_path, net, optimizer, criterion, device, epochs, batch_size, spli
 			seq_lens = sequence_lengths.to(device)
 
 			predictions = net(inputs, seq_lens)      
-			targets = targets.to(device)
+			targets = targets.to(device); mask = build_mask(sequence_lengths).to(device)
 
-			batch_loss = criterion(predictions, targets, seq_lens, device)
+			batch_loss = criterion(predictions, targets, mask)
 
 			err.append(batch_loss.cpu().item())
 

@@ -7,7 +7,7 @@ def get_num_lines(fname):
             pass
     return i + 1
 
-def pad_predictions(batch, seq_lengths):
+def pad_profiles(batch, seq_lengths):
     
     max_len = seq_lengths[0]
     
@@ -30,16 +30,13 @@ def build_mask(seq_lengths):
         
     return torch.stack(mask)
 
-def custom_cross_entropy(batch_pred, batch_target, seq_len, device):
+def custom_cross_entropy(batch_pred, batch_target, mask):
     
-    mask = build_mask(seq_len)
-    mask = mask.to(device)
-    
-    epsilon= 1E-8
+    epsilon=1E-8
     
     CEs = (-(batch_target * torch.log(batch_pred+epsilon))).sum(2)
     
-    seq_avg = ((CEs)*mask).sum(1) / mask.sum(1)
+    seq_avg = (CEs*mask).sum(1) / mask.sum(1)
 
     batch_error = seq_avg.mean(0)
     

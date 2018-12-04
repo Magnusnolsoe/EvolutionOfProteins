@@ -18,10 +18,10 @@ def main():
         
     
     parser = argparse.ArgumentParser()
-    group = parser.add_mutually_exclusive_group()
+    mutex_group = parser.add_mutually_exclusive_group()
     
-    group.add_argument("-t", "--train", help="start the training", action="store_true")
-    group.add_argument("-p", "--predict", help="make a prediction", action="store_true")
+    mutex_group.add_argument("-t", "--train", help="start the training", action="store_true")
+    mutex_group.add_argument("-p", "--predict", help="make a prediction", action="store_true")
     
     # Data parameters
     parser.add_argument("--data_dir", help="relative path to the data directory (default is data/)", default="data")
