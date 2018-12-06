@@ -34,5 +34,5 @@ for file in filenames:
 	
 	plt.tight_layout()
 
-	plt.savefig(file + '.png')
+	plt.savefig(file + '.png', bbox_inches="tight")
 	plt.close()
