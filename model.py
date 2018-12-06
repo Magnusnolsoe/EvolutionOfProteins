@@ -29,13 +29,9 @@ class Net(nn.Module):
         self.activation = nn.Softmax(dim=1)
 
     def init_hidden(self, batch_size):
-        h0 = torch.randn(self.num_layers*self.directions, batch_size, self.rnn_hidden_size)
-        c0 = torch.randn(self.num_layers*self.directions, batch_size, self.rnn_hidden_size)
-
-        if self.device.type == "cuda" and torch.cuda.is_available():
-            h0 = h0.cuda()
-            c0 = c0.cuda()
-
+        h0 = torch.randn(self.num_layers*self.directions, batch_size, self.rnn_hidden_size).to(self.device)
+        c0 = torch.randn(self.num_layers*self.directions, batch_size, self.rnn_hidden_size).to(self.device)
+        
         h0 = Variable(h0)
         c0 = Variable(c0)
 
@@ -46,29 +42,27 @@ class Net(nn.Module):
         
         batch_size = len(batch)
 
-        hidden_state_params = self.init_hidden(batch_size)
-
         embedded_batch = self.embedding(batch)
         
+        # Pack sequence
         packed = pack_padded_sequence(embedded_batch, seq_lengths, batch_first=True)
         
+        hidden_state_params = self.init_hidden(batch_size)
         rnn_out, (h_n, c_n) = self.LSTM(packed, hidden_state_params)
         
-        x = pad_packed_sequence(rnn_out, batch_first=True, padding_value=0)
-   
-        x = x[0]
-        seq_len = x.size()[1]
+        # Unpack sequence
+        x, _ = pad_packed_sequence(rnn_out, batch_first=True, padding_value=0)
+        
+        max_seq_len = x.size()[1]
         
         x = x.contiguous()
         x = x.view(-1, x.shape[2])
     
         x = self.dropout(x)
-        
-        x = self.Linear(x)
-        
+        x = self.Linear(x)        
         x = self.activation(x)
         
-        x = x.view(batch_size, seq_len, self.linear_units)
+        x = x.view(batch_size, max_seq_len, self.linear_units)
         
         return x
     

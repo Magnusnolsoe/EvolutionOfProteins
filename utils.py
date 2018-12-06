@@ -1,26 +1,14 @@
 import torch
-from torch import t as T
 
 def get_num_lines(fname):
-    with open(fname) as f:
-        for i, l in enumerate(f):
-            pass
-    return i + 1
+	""" Returns the number of lines in a given file. """
+	with open(fname) as f:
+		for i, l in enumerate(f):
+			pass
+	return i + 1
 
-def pad_profiles(batch, seq_lengths):
-    
-    max_len = seq_lengths[0]
-    
-    padded_batch = []
-    for profile, seq_len in zip(batch, seq_lengths):
-        padded_batch.append(T(torch.nn.functional.pad(T(profile),
-                                                      (0, max_len-seq_len),
-                                                      value=1)))
-
-    return torch.stack(padded_batch)
-        
 def build_mask(seq_lengths):
-    
+    """ Creates a mask matrix for a batch of sequences. """
     max_len = seq_lengths[0]
     mask = []
     for seq_len in seq_lengths:
@@ -31,7 +19,7 @@ def build_mask(seq_lengths):
     return torch.stack(mask)
 
 def custom_cross_entropy(batch_pred, batch_target, mask):
-    
+    """ Calculates the average cross entropy error over a batch. """
     epsilon=1E-8
     
     CEs = (-(batch_target * torch.log(batch_pred+epsilon))).sum(2)
