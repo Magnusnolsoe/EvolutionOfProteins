@@ -7,6 +7,25 @@ def get_num_lines(fname):
 			pass
 	return i + 1
 
+def random_guess(seq_lengths):
+	
+	max_len = seq_lengths[0]
+	guess = []
+	for seq in seq_lengths:
+		random_profile = []
+		for i in range(seq):
+			uniform = torch.ones(20) / 20
+			random_profile.append(uniform)
+			
+		for i in range(max_len - seq):
+			uniform = torch.zeros(20)
+			random_profile.append(uniform)
+			
+		guess.append(torch.stack(random_profile))
+		
+	return torch.stack(guess)
+
+
 def build_mask(seq_lengths):
     """ Creates a mask matrix for a batch of sequences. """
     max_len = seq_lengths[0]
@@ -24,9 +43,9 @@ def custom_cross_entropy(batch_pred, batch_target, mask):
     
     CEs = (-(batch_target * torch.log(batch_pred+epsilon))).sum(2)
     
-    seq_avg = (CEs*mask).sum(1) / mask.sum(1)
+    seq_avg_ce = (CEs*mask).sum(1) / mask.sum(1)
 
-    batch_error = seq_avg.mean(0)
+    batch_error = seq_avg_ce.mean(0)
     
     return batch_error
 
