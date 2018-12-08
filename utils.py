@@ -1,5 +1,13 @@
 import torch
 
+class Logger:
+	def __init__(self, verbose):
+		self.verbose = verbose
+		
+	def info(self, msg):
+		if self.verbose:
+			print(msg)
+
 def get_num_lines(fname):
 	""" Returns the number of lines in a given file. """
 	with open(fname) as f:

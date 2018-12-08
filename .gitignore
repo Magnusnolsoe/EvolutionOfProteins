@@ -107,4 +107,6 @@ venv.bak/
 data/
 .DS_Store
 results/
+models/
+checkpoint/
 *.png
