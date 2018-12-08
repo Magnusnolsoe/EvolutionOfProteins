@@ -1,12 +1,11 @@
 import torch
-#import matplotlib.pyplot as plt
 
 from tqdm import tqdm
 from data import DataIterator
 from utils import pad_predictions
 import pickle
 
-def train(data, net, optimizer, criterion, device, epochs, batch_size):
+def train(data, net, optimizer, criterion, device, epochs, batch_size, output_dir):
 	
 	X, y, seq = data
 
@@ -41,12 +40,17 @@ def train(data, net, optimizer, criterion, device, epochs, batch_size):
 
 			counter +=1
 
-			if counter % 100 == 99:
+			if counter % 200 == 199:
 				error = sum(running_loss) / len(running_loss)
 				running_loss = []
 				train_err.append(error)
 				print('Training error: ' + str(error))
 				counter = 0
+
+		if len(running_loss) > 0:
+			error = sum(running_loss) / len(running_loss)
+			train_err.append(error)
+			print('Training error: ' + str(error))
 
                 
         ### TEST LOOP ###
@@ -65,22 +69,24 @@ def train(data, net, optimizer, criterion, device, epochs, batch_size):
 			running_loss.append(batch_loss.cpu().item())
 			counter += 1
 
-			if counter % 100 == 99:
+			if counter % 200 == 199:
 				error = sum(running_loss) / len(running_loss)
 				running_loss = []
 				test_err.append(error)
 				print('Test error: ' + str(error))
 				counter = 0
 
+		if len(running_loss) > 0:
+			error = sum(running_loss) / len(running_loss)
+			test_err.append(error)
+			print('Test error: ' + str(error))
+
+		if (epoch + 1) % 5 == 0 and epoch > 2:
+			for group in optimizer.param_gruops:
+				group['lr'] = group['lr'] * 0.9
 
 	final_results = [train_err, test_err]
-	file_name = "results/Emb=" + str(net.embedding_dim) + "-lstm_layer=" + str(net.num_layers) + "-lstm_size=" + str(net.rnn_hidden_size) + ".pk"
+	file_name = output_dir + "/Emb=" + str(net.embedding_dim) + "-lstm_layer=" + str(net.num_layers) + "-lstm_size=" + str(net.rnn_hidden_size) + ".pk"
 	pickle.dump(final_results, open(file_name, "wb"))
 
-#	plt.plot(train_err, 'ro-', label="train error")
-#	plt.plot(test_err, 'bo-', label="test error")
-#	plt.legend()
-#	plt.title("Emb=" + str(net.embedding_dim) + ", lstm_layer=" + str(net.num_layers) + ", lstm_size=" + str(net.rnn_hidden_size))
-#	plt.savefig("Emb=" + str(net.embedding_dim) + ", lstm_layer=" + str(net.num_layers) + ", lstm_size=" + str(net.rnn_hidden_size) + ".png")
-#	plt.show()
                 
