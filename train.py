@@ -1,9 +1,13 @@
 import torch
+from  torch.optim.lr_scheduler import StepLR
+
+import pickle
 
 from tqdm import tqdm
 from data import DataIterator
 from utils import pad_predictions
-import pickle
+
+
 
 def train(data, net, optimizer, criterion, device, epochs, batch_size, output_dir):
 	
@@ -14,9 +18,12 @@ def train(data, net, optimizer, criterion, device, epochs, batch_size, output_di
 
 	train_err, test_err = [], []
 	    
+	scheduler = StepLR(optimizer, step_size=6, gamma=0.9)
+
 	for epoch in range(epochs):
 
 		print("Epoch: " + str(epoch+1) + " / " + str(epochs))
+		scheduler.step()
 
 		### TRAIN LOOP ###
 		net.train()
@@ -81,9 +88,6 @@ def train(data, net, optimizer, criterion, device, epochs, batch_size, output_di
 			test_err.append(error)
 			print('Test error: ' + str(error))
 
-		if (epoch + 1) % 5 == 0 and epoch > 2:
-			for group in optimizer.param_gruops:
-				group['lr'] = group['lr'] * 0.9
 
 	final_results = [train_err, test_err]
 	file_name = output_dir + "/Emb=" + str(net.embedding_dim) + "-lstm_layer=" + str(net.num_layers) + "-lstm_size=" + str(net.rnn_hidden_size) + ".pk"
