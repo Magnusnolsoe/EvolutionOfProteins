@@ -24,10 +24,10 @@ class Net(nn.Module):
         
         self.dropout = nn.Dropout(linear_dropout)
         
-        self.Linear = nn.Linear(self.directions*rnn_hidden_size, linear_out, bias=True)
-
-        self.activation = nn.Softmax(dim=1)
-
+        self.f = nn.Linear(self.directions*rnn_hidden_size, linear_out, bias=True)
+        
+        self.g = nn.Linear(2*self.directions*rnn_hidden_size, linear_out*linear_out, bias=True)
+        
     def init_hidden(self, batch_size):
         h0 = torch.randn(self.num_layers*self.directions, batch_size, self.rnn_hidden_size).to(self.device)
         c0 = torch.randn(self.num_layers*self.directions, batch_size, self.rnn_hidden_size).to(self.device)
@@ -40,7 +40,7 @@ class Net(nn.Module):
         
     def forward(self, batch, seq_lengths):
         
-        batch_size = len(batch)
+        batch_size = batch.shape[0]
 
         embedded_batch = self.embedding(batch)
         
@@ -51,18 +51,23 @@ class Net(nn.Module):
         rnn_out, (h_n, c_n) = self.LSTM(packed, hidden_state_params)
         
         # Unpack sequence
-        x, _ = pad_packed_sequence(rnn_out, batch_first=True, padding_value=0)
+        h, _ = pad_packed_sequence(rnn_out, batch_first=True, padding_value=0)
         
-        max_seq_len = x.size()[1]
+        # max_seq_len = x.size()[1]
         
-        x = x.contiguous()
-        x = x.view(-1, x.shape[2])
-    
-        x = self.dropout(x)
-        x = self.Linear(x)        
-        x = self.activation(x)
+        f_in = h.contiguous()
+        f_in = f_in.view(-1, h.shape[2])
         
-        x = x.view(batch_size, max_seq_len, self.linear_units)
+        f_out = self.f(f_in)
         
-        return x
+        g_in = []
+        for target in h:
+            for i in range(target.shape[0] - 1):
+                g_in.append(torch.cat((target[i], target[i+1])))
+        g_in = torch.stack(g_in)
+        
+        g_out = self.g(g_in)
+        
+        
+        return {"f": f_out, "g": g_out}
     
