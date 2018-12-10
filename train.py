@@ -18,7 +18,14 @@ def train(data, net, optimizer, criterion, device, epochs, batch_size, output_di
 
 	train_err, test_err = [], []
 	    
-	scheduler = StepLR(optimizer, step_size=6, gamma=0.9)
+	scheduler = StepLR(optimizer, step_size=8, gamma=0.9)
+
+	learning_rate = None
+	weight_decay = None
+
+	for params in optimizer.param_groups:
+		learning_rate = params['lr']
+		weight_decay = params['weight_decay']
 
 	for epoch in range(epochs):
 
@@ -88,9 +95,6 @@ def train(data, net, optimizer, criterion, device, epochs, batch_size, output_di
 			test_err.append(error)
 			print('Test error: ' + str(error))
 
-
-	final_results = [train_err, test_err]
-	file_name = output_dir + "/Emb=" + str(net.embedding_dim) + "-lstm_layer=" + str(net.num_layers) + "-lstm_size=" + str(net.rnn_hidden_size) + ".pk"
-	pickle.dump(final_results, open(file_name, "wb"))
-
-                
+		final_results = [train_err, test_err, epoch+1]
+		file_name = output_dir + "/lr=" + str(learning_rate) + "-wd=" + str(weight_decay) + ".pk"
+		pickle.dump(final_results, open(file_name, "wb"))

@@ -9,6 +9,7 @@ import os
 import argparse
 import torch
 import torch.optim as optim
+import numpy as np
 
 from pathlib import Path
 
@@ -41,9 +42,9 @@ def main():
     parser.add_argument("--epoch", help="number of epochs in training", type=int, default=1)
     parser.add_argument("--batch_size", help="size of batch in training", type=int, default=32)
     parser.add_argument("-lr", "--learning_rate", help="learning rate of optimizer", type=float, default=1e-4)
-    parser.add_argument("--embedding_dim", help="dimension of embeddings", type=int, default=32)
-    parser.add_argument("--rnn_layers", help="number of layers in RNN", type=int, default=1)
-    parser.add_argument("--rnn_size", help="size of hidden units in RNN", type=int, default=100)
+    parser.add_argument("--embedding_dim", help="dimension of embeddings", type=int, default=100)
+    parser.add_argument("--rnn_layers", help="number of layers in RNN", type=int, default=2)
+    parser.add_argument("--rnn_size", help="size of hidden units in RNN", type=int, default=512)
     parser.add_argument("--rnn_dropout", help="dropout rate in RNN", type=float, default=0.3)
     parser.add_argument("--dropout", help="dropout between RNN and linear layer", type=float, default=0.3)
     parser.add_argument("--linear_units", help="number of units in linear layer", type=int, default=20)
@@ -65,19 +66,17 @@ def main():
         print("Device in use:", device)
        
         data_loader = DataLoader(data_path)
-        split_rate = 0.33
+        split_rate = 0.20
         X, y, seq = data_loader.run_pipline(split_rate)
 
         ### Cross validation ###
-        embeddings_size = [256, 512, 1024]
-        lstm_size = embeddings_size
 
         criterion = custom_cross_entropy
 
-        for emb_size in embeddings_size:
-            for lstm_layer_size in lstm_size:
+        for lr in np.logspace(-6, 0, 5):
+            for weight_decay in np.logspace(-6, 0, 5):
 
-                result_label = args.output_dir + "/Emb=" + str(emb_size) + "-lstm_layer=" + str(args.rnn_layers) + "-lstm_size=" + str(lstm_layer_size) + ".pk"
+                result_label = args.output_dir + "/lr=" + str(lr) + "-wd=" + str(weight_decay) + ".pk"
                 result_path = Path(result_label)
 
                 if not args.override and result_path.is_file():
@@ -85,15 +84,15 @@ def main():
                 else:
                     print("Training model " + ', '.join(result_label.replace('.pk', '').split("/")[1].split('-')))
                     net = Net(device=device,
-                        embedding_dim=emb_size,
-                        rnn_hidden_size=lstm_layer_size,
+                        embedding_dim=args.embedding_dim,
+                        rnn_hidden_size=args.rnn_size,
                         rnn_layers=args.rnn_layers,
                         rnn_dropout=args.rnn_dropout,
                         linear_out=args.linear_units,
                         linear_dropout=args.dropout,
                         extra_dense_layer=args.extra_dense_layer).to(device)
 
-                    optimizer = optim.Adam(net.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
+                    optimizer = optim.Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
                     train((X,y,seq), net, optimizer, criterion, device, args.epoch, args.batch_size, args.output_dir)
 
     
