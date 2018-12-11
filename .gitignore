@@ -108,3 +108,5 @@ data/
 .DS_Store
 *.png
 results_vault/
+checkpoint/
+results/
