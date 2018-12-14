@@ -110,3 +110,6 @@ data/
 results_vault/
 checkpoint/
 results/
+models/
+checkpoint/
+*.png

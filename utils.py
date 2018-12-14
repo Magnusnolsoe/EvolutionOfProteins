@@ -1,26 +1,41 @@
 import torch
-from torch import t as T
+
+class Logger:
+	def __init__(self, verbose):
+		self.verbose = verbose
+		
+	def info(self, msg):
+		if self.verbose:
+			print(msg)
 
 def get_num_lines(fname):
-    with open(fname) as f:
-        for i, l in enumerate(f):
-            pass
-    return i + 1
+	""" Returns the number of lines in a given file. """
+	with open(fname) as f:
+		for i, l in enumerate(f):
+			pass
+	return i + 1
 
-def pad_predictions(batch, seq_lengths):
-    
-    max_len = seq_lengths[0]
-    
-    padded_batch = []
-    for profile, seq_len in zip(batch, seq_lengths):
-        padded_batch.append(T(torch.nn.functional.pad(T(profile),
-                                                      (0, max_len-seq_len),
-                                                      value=1)))
+def random_guess(seq_lengths):
+	
+	max_len = seq_lengths[0]
+	guess = []
+	for seq in seq_lengths:
+		random_profile = []
+		for i in range(seq):
+			uniform = torch.ones(20) / 20
+			random_profile.append(uniform)
+			
+		for i in range(max_len - seq):
+			uniform = torch.zeros(20)
+			random_profile.append(uniform)
+			
+		guess.append(torch.stack(random_profile))
+		
+	return torch.stack(guess)
 
-    return torch.stack(padded_batch)
-        
+
 def build_mask(seq_lengths):
-    
+    """ Creates a mask matrix for a batch of sequences. """
     max_len = seq_lengths[0]
     mask = []
     for seq_len in seq_lengths:
@@ -30,18 +45,15 @@ def build_mask(seq_lengths):
         
     return torch.stack(mask)
 
-def custom_cross_entropy(batch_pred, batch_target, seq_len, device):
-    
-    mask = build_mask(seq_len)
-    mask = mask.to(device)
-    
-    epsilon= 1E-8
+def custom_cross_entropy(batch_pred, batch_target, mask):
+    """ Calculates the average cross entropy error over a batch. """
+    epsilon=1E-8
     
     CEs = (-(batch_target * torch.log(batch_pred+epsilon))).sum(2)
     
-    seq_avg = ((CEs)*mask).sum(1) / mask.sum(1)
+    seq_avg_ce = (CEs*mask).sum(1) / mask.sum(1)
 
-    batch_error = seq_avg.mean(0)
+    batch_error = seq_avg_ce.mean(0)
     
     return batch_error
 
