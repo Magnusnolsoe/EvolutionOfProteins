@@ -18,9 +18,7 @@ from utils import custom_cross_entropy, Logger
 from model import Net
 from data import DataLoader
 
-
 def main():
-
 
 	parser = argparse.ArgumentParser()
 	mutex_group = parser.add_mutually_exclusive_group()
@@ -39,20 +37,20 @@ def main():
 	parser.add_argument("--checkpoint_dir", help="path to the checkpoint directory", default="checkpoint")
 	parser.add_argument("--checkpoint_name", help="filename of checkpoint model", default="defualt.pt")
 	parser.add_argument("--load_checkpoint", help="load checkpoint model", action="store_true")
-	
+
 	# Training parameters
 	parser.add_argument("--epoch", help="number of epochs in training", type=int, default=1)
-	parser.add_argument("--batch_size", help="size of batch in training", type=int, default=16)
-	parser.add_argument("-lr", "--learning_rate", help="learning rate of optimizer", type=float, default=1e-4)
-	parser.add_argument("--embedding_dim", help="dimension of embeddings", type=int, default=32)
+	parser.add_argument("--batch_size", help="size of batch in training", type=int, default=32)
+	parser.add_argument("-lr", "--learning_rate", help="learning rate of optimizer", type=float, default=0.001)
+	parser.add_argument("--embedding_dim", help="dimension of embeddings", type=int, default=100)
 	parser.add_argument("--rnn_layers", help="number of layers in RNN", type=int, default=2)
-	parser.add_argument("--rnn_size", help="size of hidden units in RNN", type=int, default=100)
-	parser.add_argument("--rnn_dropout", help="dropout rate in RNN", type=float, default=0.3)
-	parser.add_argument("--dropout", help="dropout between RNN and linear layer", type=float, default=0.5)
+	parser.add_argument("--rnn_size", help="size of hidden units in RNN", type=int, default=512)
+	parser.add_argument("--rnn_dropout", help="dropout rate in RNN", type=float, default=0.35)
+	parser.add_argument("--dropout", help="dropout between RNN and linear layer", type=float, default=0.35)
 	parser.add_argument("--linear_units", help="number of units in linear layer", type=int, default=20)
-	parser.add_argument("--weight_decay", help="weight decay factor in optimizer (default is 0)", type=float, default=0)
+	parser.add_argument("--weight_decay", help="weight decay factor in optimizer (default is 0)", type=float, default=1e-06)
 	parser.add_argument("--split_rate", help="", type=float, default=0.25)
-	
+
 	args = parser.parse_args()
 	
 	logger = Logger(args.verbose)
@@ -106,12 +104,15 @@ def main():
 			performance_name = "res.pk" # temporary name
 			checkpoint_name = args.checkpoint_name # temporary name
 			
-			pickle.dump(results, open(os.path.join("results", performance_name), "wb"))
+			#pickle.dump(results, open(os.path.join("results", performance_name), "wb"))
 			torch.save({
 					"epoch": args.epoch,
 					"model_state_dict": net.cpu().state_dict(),
 					"optimizer_state_dict": optimizer.state_dict() 
 					}, os.path.join(args.checkpoint_dir, checkpoint_name))
+
+			if os.path.isfile(os.path.join(args.checkpoint_dir, "checkpoint.pt")):
+				os.remove(os.path.join(args.checkpoint_dir, "checkpoint.pt"))
 	
 if __name__ == "__main__":
 	main()

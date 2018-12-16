@@ -1,6 +1,13 @@
+import os
+
 from tqdm import tqdm
 from data import DataLoader, DataIterator
 from utils import build_mask
+
+import pickle
+
+import torch
+from  torch.optim.lr_scheduler import StepLR
 
 def train(data_path, net, optimizer, criterion, device, logger, args):
 	
@@ -14,11 +21,17 @@ def train(data_path, net, optimizer, criterion, device, logger, args):
 	train_err, test_err = [], []
 	
 	logger.info(net)
+
+	scheduler = StepLR(optimizer, step_size=10, gamma=0.95)
 	
 	for epoch in range(args.epoch):
 		
 		logger.info("Epoch: {} / {}".format(epoch+1, args.epoch))
 
+		scheduler.step()
+		
+		err = []
+		
 		### TRAIN LOOP ###
 		net.train()
 		for proteins, sequence_lengths, targets in (tqdm(train_iter, ascii=False, desc="Training", total=int(len(X[0]) / args.batch_size), unit="batch") if args.verbose else train_iter):
@@ -27,7 +40,7 @@ def train(data_path, net, optimizer, criterion, device, logger, args):
 			seq_lens = sequence_lengths.to(device)
 			targets = targets.to(device)
 			
-			predictions = net(inputs, seq_lens)                
+			predictions = net(inputs, seq_lens)
 			
 			mask = build_mask(sequence_lengths).to(device)
 
@@ -52,24 +65,30 @@ def train(data_path, net, optimizer, criterion, device, logger, args):
 			targets = targets.to(device)
 
 			predictions = net(inputs, seq_lens)      
-			
 			mask = build_mask(sequence_lengths).to(device)
-
 			batch_loss = criterion(predictions, targets, mask)
 
-			if counter % 200 == 199:
-				error = sum(running_loss) / len(running_loss)
-				running_loss = []
-				test_err.append(error)
-				print('Test error: ' + str(error))
-				counter = 0
+			err.append(batch_loss.cpu().item())
 
 		epoch_test_error = sum(err) / len(err)
 		test_err.append(epoch_test_error)
-		
+
+		if args.store_results:
+			final_results = [train_err, test_err, epoch]
+
+			performance_name = "res.pk" # temporary name
+			checkpoint_name = args.checkpoint_name # temporary name
+			
+			pickle.dump(final_results, open(os.path.join("results", performance_name), "wb"))
+
+			torch.save({
+					"epoch": args.epoch,
+					"model_state_dict": net.cpu().state_dict(),
+					"optimizer_state_dict": optimizer.state_dict() 
+					}, os.path.join(args.checkpoint_dir, "checkpoint.pt"))
+			
+			net.to(device)
+
 		logger.info("Training error: {0:.4f},\tTest error: {0:.4f}".format(epoch_trainig_error, epoch_test_error))
 			
 	return (train_err, test_err)
-# plt.plot(train_err, 'ro-', label="train error")
-# plt.plot(test_err, 'bo-', label="test error")
-# plt.show()
