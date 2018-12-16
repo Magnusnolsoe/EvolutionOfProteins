@@ -19,6 +19,8 @@ class Net(nn.Module):
         self.directions= 2 if bi_dir else 1
         self.linear_units = linear_out
         
+        self.fc1 = nn.Linear(embedding_dim, embedding_dim, bias=True)
+        
         self.LSTM = nn.LSTM(embedding_dim, hidden_size=rnn_hidden_size, num_layers=rnn_layers,
                            batch_first=True, dropout=rnn_dropout, bidirectional=bi_dir)
         
