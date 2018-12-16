@@ -109,4 +109,5 @@ data/
 results/
 models/
 checkpoint/
+results_vault/
 *.png
