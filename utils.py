@@ -1,5 +1,7 @@
 import torch
 
+from torch.nn.functional import cosine_similarity as cos_sim
+
 class Logger:
 	def __init__(self, verbose):
 		self.verbose = verbose
@@ -16,7 +18,8 @@ def get_num_lines(fname):
 	return i + 1
 
 def random_guess(seq_lengths):
-	
+	""" Returns a uniform matrix with shape of seq_lengths x 20, with 1/20 in
+		each entry """
 	max_len = seq_lengths[0]
 	guess = []
 	for seq in seq_lengths:
@@ -33,6 +36,13 @@ def random_guess(seq_lengths):
 		
 	return torch.stack(guess)
 
+def cosine_similarity(predictions, targets, mask):
+	
+	sim = cos_sim(predictions, targets, dim=2) * mask
+	a = sim.sum(dim=1) / mask.sum(dim=1) 
+	
+	return a.mean()
+	
 
 def build_mask(seq_lengths):
     """ Creates a mask matrix for a batch of sequences. """
