@@ -7,7 +7,6 @@ Created on Fri Dec 21 19:04:12 2018
 """
 
 import torch
-import numpy as np
 
 def log_sum_exp(z, axis=1):
     zmax = torch.max(z, axis)[0]

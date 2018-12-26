@@ -10,6 +10,7 @@ import argparse
 import torch
 import torch.optim as optim
 import pickle
+import crf
 
 from train import train, verbose_train, verbose_train_crf
 from utils import custom_cross_entropy, Logger
@@ -99,7 +100,7 @@ def run_crf(args, data_path):
 
         optimizer = optim.Adam(model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
 
-    criterion = custom_cross_entropy
+    criterion = crf.log_likelihood
 
     results = verbose_train_crf(data_path, model, optimizer, criterion, device, args)
     

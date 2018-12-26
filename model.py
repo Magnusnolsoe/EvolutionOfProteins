@@ -134,5 +134,5 @@ class CRF_Net(nn.Module):
         
         x = crf.log_marginal(nu_alp, nu_bet)
         
-        return {"prediction": torch.exp(x), "f": f_out, "g": g_out,
+        return {"p": torch.exp(x), "f": f_out, "g": g_out,
                 "alpha": nu_alp, "beta": nu_bet}
