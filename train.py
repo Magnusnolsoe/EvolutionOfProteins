@@ -33,11 +33,11 @@ def verbose_train_crf(data_path, model, optimizer, criterion, device, args):
 
 			mask = build_mask(sequence_lengths).to(device)
         
-			optimizer.zero_grad()
-			batch_loss = criterion(proteins, model_out["f"], model_out["g"],
-                          model_out["alpha"], model_out["beta"], mask)
+			optimizer.zero_grad(); batch_loss = criterion(model_out["p"], targets, mask)
+			#batch_loss = criterion(proteins, model_out["f"], model_out["g"],
+                          #model_out["alpha"], model_out["beta"], mask)
 			batch_loss.backward()
-			optimizer.step(); print(model_out["p"])
+			optimizer.step()
             
 			cos_sim = cosine_similarity(model_out["p"], targets, mask)
 			
@@ -61,10 +61,10 @@ def verbose_train_crf(data_path, model, optimizer, criterion, device, args):
 
 			model_out = model(inputs, seq_lens)      
 			
-			mask = build_mask(sequence_lengths).to(device)
+			mask = build_mask(sequence_lengths).to(device); batch_loss = criterion(model_out["p"], targets, mask)
 
-			batch_loss = criterion(proteins, model_out["f"], model_out["g"],
-                         model_out["alpha"], model_out["beta"], mask)
+			#batch_loss = criterion(proteins, model_out["f"], model_out["g"],
+                         #model_out["alpha"], model_out["beta"], mask)
 			cos_sim = cosine_similarity(model_out["p"], targets, mask)
 			
 			err.append(batch_loss.cpu().item())

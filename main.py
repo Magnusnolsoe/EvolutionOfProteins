@@ -100,8 +100,8 @@ def run_crf(args, data_path):
 
         optimizer = optim.Adam(model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
 
-    criterion = crf.neg_log_likelihood
-
+    #criterion = crf.neg_log_likelihood
+    criterion = custom_cross_entropy
     results = verbose_train_crf(data_path, model, optimizer, criterion, device, args)
     
     if args.store_results:
