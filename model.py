@@ -1,9 +1,10 @@
 import torch.nn as nn
 import torch
-import crf
-from utils import build_mask
+import crf; import sys
+
 from torch.autograd import Variable 
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
+from torch import relu, sigmoid
 
 class Net(nn.Module):
     def __init__(self, device, num_embeddings=21, embedding_dim=32,
@@ -19,6 +20,7 @@ class Net(nn.Module):
         self.num_layers = rnn_layers
         self.directions= 2 if bi_dir else 1
         self.linear_units = linear_out
+        rnn_dropout = rnn_dropout if rnn_layers > 1 else 0
         
         self.LSTM = nn.LSTM(embedding_dim, hidden_size=rnn_hidden_size, num_layers=rnn_layers,
                            batch_first=True, dropout=rnn_dropout, bidirectional=bi_dir)
@@ -54,7 +56,7 @@ class Net(nn.Module):
         # Unpack sequence
         x, _ = pad_packed_sequence(rnn_out, batch_first=True, padding_value=0)
         
-        max_seq_len = x.size()[1]
+        n = x.size()[1]
         
         x = x.contiguous()
         x = x.view(-1, x.shape[2])
@@ -63,7 +65,7 @@ class Net(nn.Module):
         x = self.Linear(x)        
         x = self.activation(x)
         
-        x = x.view(batch_size, max_seq_len, self.linear_units)
+        x = x.view(batch_size, n, self.linear_units)
         
         return x
 
@@ -71,7 +73,7 @@ class Net(nn.Module):
 class CRF_Net(nn.Module):
     def __init__(self, device, num_embeddings=21, embedding_dim=32,
                  rnn_hidden_size=100, rnn_layers=2, rnn_dropout=0.3, bi_dir=True,
-                 classes=20, linear_dropout=0.5):
+                 linear_units=200, classes=20, linear_dropout=0.5):
         super(CRF_Net, self).__init__()
         
         self.device = device
@@ -82,15 +84,18 @@ class CRF_Net(nn.Module):
         self.num_layers = rnn_layers
         self.directions= 2 if bi_dir else 1
         self.classes = classes
+        self.linear_units = linear_units
+        rnn_dropout = rnn_dropout if rnn_layers > 1 else 0
         
         self.LSTM = nn.LSTM(embedding_dim, hidden_size=rnn_hidden_size, num_layers=rnn_layers,
                            batch_first=True, dropout=rnn_dropout, bidirectional=bi_dir)
         
         self.dropout = nn.Dropout(linear_dropout)
         
-        self.f = nn.Linear(self.directions*rnn_hidden_size, classes, bias=True)
+        self.linear = nn.Linear(self.directions*rnn_hidden_size, linear_units)
         
-        self.g = nn.Linear(self.directions*rnn_hidden_size, classes**2, bias=True)
+        self.f = nn.Linear(linear_units, classes, bias=True)
+        self.g = nn.Linear(2*linear_units, classes**2, bias=True)
 
 
     def init_hidden(self, batch_size):
@@ -117,22 +122,31 @@ class CRF_Net(nn.Module):
         
         # Unpack sequence
         h, _ = pad_packed_sequence(rnn_out, batch_first=True, padding_value=0)
-        max_seq_len = h.size()[1]
-
+        n = h.size()[1]
+        
         h = h.contiguous().view(-1, h.size()[2])
         
         x = self.dropout(h)
+        x = relu(self.linear(x))
         
-        f_out = self.f(x)
-        g_out = self.g(x)
+        g_in = []
+        for batch in x.view(batch_size, n, self.linear_units):
+            for i in range(n-1):
+                g_in.append(torch.cat((batch[i], batch[i+1])))
+        g_in = torch.stack(g_in)
+
+        f = self.f(x)
+        g = self.g(g_in)
+
+        f = f.view(batch_size, n, self.classes)
+        g = g.view(batch_size, n-1, self.classes, self.classes)
         
-        f_out = f_out.view(batch_size, max_seq_len, self.classes)
-        g_out = g_out.view(batch_size, max_seq_len, self.classes, self.classes)
-        
-        nu_alp = crf.forward_pass(f_out, g_out)
-        nu_bet = crf.backward_pass(f_out, g_out)
+        nu_alp = crf.forward_pass(f, g)
+        nu_bet = crf.backward_pass(f, g)
         
         x = crf.log_marginal(nu_alp, nu_bet)
+        x = torch.exp(x)
+        print(x)
         
-        return {"p": torch.exp(x), "f": f_out, "g": g_out,
+        return {"p": x, "f": f, "g": g,
                 "alpha": nu_alp, "beta": nu_bet}

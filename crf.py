@@ -19,7 +19,7 @@ def forward_pass(f, g, time_major=False):
     if not time_major:
         f = f.permute(1, 0, 2)
         g = g.permute(1, 0, 2, 3)
-    nu = torch.zeros(f.size())
+    nu = torch.zeros(f.size(), requires_grad=False)
     nu[0] = f[0]
     sequence_length = f.size()[0]
     class_dimension = 1
@@ -37,7 +37,7 @@ def backward_pass(f, g, time_major=False):
     if not time_major:
         f = f.permute(1, 0, 2)
         g = g.permute(1, 0, 2, 3)
-    nu = torch.zeros(f.size())
+    nu = torch.zeros(f.size(), requires_grad=False)
     sequence_length = f.size()[0]
     class_dimension = 1
     for index in range(1, sequence_length):
@@ -79,6 +79,9 @@ def log_likelihood(y, f, g, nu_alp, nu_bet, mask, mean_batch=True, time_major=Fa
         log_like = torch.mean(log_like)
     return log_like
 
+def neg_log_likelihood(y, f, g, nu_alp, nu_bet, mask):
+    return -log_likelihood(y, f, g, nu_alp, nu_bet, mask)
+    
 def log_marginal(nu_alp, nu_bet, index=None, time_major=False):
     if not time_major:
         nu_alp = nu_alp.permute(1, 0, 2)
