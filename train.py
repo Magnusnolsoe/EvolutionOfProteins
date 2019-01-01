@@ -68,7 +68,7 @@ def verbose_train_crf(data_path, model, optimizer, criterion, device, args):
 			cos_sim = cosine_similarity(model_out["p"], targets, mask)
 			
 			err.append(batch_loss.cpu().item())
-			acc.append(cos_sim.cpu().item())
+			acc.append(cos_sim.cpu().item()); print(model_out["p"])
 
 		epoch_test_error = sum(err) / len(err)
 		epoch_test_accuracy = sum(acc) / len(acc)

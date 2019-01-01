@@ -141,8 +141,8 @@ class CRF_Net(nn.Module):
         f = f.view(batch_size, n, self.classes)
         g = g.view(batch_size, n-1, self.classes, self.classes)
         
-        nu_alp = crf.forward_pass(f, g)
-        nu_bet = crf.backward_pass(f, g)
+        nu_alp = crf.forward_pass(f, g, self.device)
+        nu_bet = crf.backward_pass(f, g, self.device)
         
         x = crf.log_marginal(nu_alp, nu_bet)
         x = torch.exp(x)

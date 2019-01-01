@@ -15,11 +15,11 @@ def log_sum_exp(z, axis=1):
 def forward_step(nu, f, g, class_dimension):
     return f + log_sum_exp(g + torch.unsqueeze(nu, class_dimension+1), axis=class_dimension)
 
-def forward_pass(f, g, time_major=False):
+def forward_pass(f, g, device, time_major=False):
     if not time_major:
         f = f.permute(1, 0, 2)
         g = g.permute(1, 0, 2, 3)
-    nu = torch.zeros(f.size(), requires_grad=False)
+    nu = torch.zeros(f.size(), requires_grad=False).to(device)
     nu[0] = f[0]
     sequence_length = f.size()[0]
     class_dimension = 1
@@ -33,11 +33,11 @@ def forward_pass(f, g, time_major=False):
 def backward_step(nu, f, g, class_dimension):
     return log_sum_exp(torch.unsqueeze(f + nu, class_dimension) + g, axis=class_dimension+1)
 
-def backward_pass(f, g, time_major=False):
+def backward_pass(f, g, device, time_major=False):
     if not time_major:
         f = f.permute(1, 0, 2)
         g = g.permute(1, 0, 2, 3)
-    nu = torch.zeros(f.size(), requires_grad=False)
+    nu = torch.zeros(f.size(), requires_grad=False).to(device)
     sequence_length = f.size()[0]
     class_dimension = 1
     for index in range(1, sequence_length):
