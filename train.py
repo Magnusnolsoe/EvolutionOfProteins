@@ -68,15 +68,15 @@ def verbose_train_crf(data_path, model, optimizer, criterion, device, args):
 			cos_sim = cosine_similarity(model_out["p"], targets, mask)
 			
 			err.append(batch_loss.cpu().item())
-			acc.append(cos_sim.cpu().item()); print(model_out["p"])
+			acc.append(cos_sim.cpu().item())
 
 		epoch_test_error = sum(err) / len(err)
 		epoch_test_accuracy = sum(acc) / len(acc)
-		test_err.append(epoch_test_error)
+		test_err.append(epoch_test_error); test_acc.append(epoch_test_accuracy)
 		
 		print("Training error: {0:.4f},\tTest error: {1:.4f}\t\tTraining accuracy: {2:.4f}\tTest accuracy: {3:.4f}".format(epoch_trainig_error, epoch_test_error, epoch_training_accuracy, epoch_test_accuracy))
 			
-	return (train_err, test_err)
+	return (train_err, test_err), (train_acc, test_acc)
 
 
 
