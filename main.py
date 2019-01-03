@@ -32,9 +32,9 @@ def main():
     parser.add_argument("--gpu", help="specify whether to use gpu or not (default is false)", action="store_true")
     parser.add_argument("-v", "--verbose", help="specify the verbosity", action="store_true")
     parser.add_argument("--store_results", help="store training and test results", action="store_true")
-    parser.add_argument("--checkpoint_dir", help="path to the checkpoint directory", default="checkpoint")
-    parser.add_argument("--checkpoint_name", help="filename of checkpoint model", default="defualt.pt")
-    parser.add_argument("--results_name", help="filename of results file", default="default.pk")
+    parser.add_argument("--checkpoint_dir", help="path to the checkpoint directory", type=str, default="checkpoint")
+    parser.add_argument("--checkpoint_name", help="filename of checkpoint model", type=str, default="defualt.pt")
+    parser.add_argument("--results_name", help="filename of results file", type=str, default="default.pk")
     parser.add_argument("--load_checkpoint", help="load checkpoint model", action="store_true")
     
     # Model parameters

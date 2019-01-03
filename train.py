@@ -175,7 +175,7 @@ def train_running_save(data_path, model, optimizer, criterion, device, logger, a
                 pickle.dump(results, file)
             torch.save({
                 "epoch": args.epoch,
-                "model_state_dict": model.cpu().state_dict(),
+                "model_state_dict": model.state_dict(),
                 "optimizer_state_dict": optimizer.state_dict() 
                 }, os.path.join(args.checkpoint_dir, checkpoint_name))  
 
