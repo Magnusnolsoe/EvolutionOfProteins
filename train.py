@@ -77,7 +77,7 @@ def train(data_path, model, optimizer, criterion, device, logger, args):
         epoch_test_error = sum(err) / len(err)
         epoch_test_accuracy = sum(acc) / len(acc)
         test_err.append(epoch_test_error)
-        train_acc.append(epoch_training_accuracy)
+        test_acc.append(epoch_test_accuracy)
 
         logger.info("Training error: {0:.4f},\tTest error: {1:.4f}\t\tTraining accuracy: {2:.4f}\tTest accuracy: {3:.4f}".format(epoch_trainig_error, epoch_test_error, epoch_training_accuracy, epoch_test_accuracy))
 
@@ -160,7 +160,7 @@ def train_running_save(data_path, model, optimizer, criterion, device, logger, a
         epoch_test_error = sum(err) / len(err)
         epoch_test_accuracy = sum(acc) / len(acc)
         test_err.append(epoch_test_error)
-        train_acc.append(epoch_training_accuracy)
+        test_acc.append(epoch_test_accuracy)
 
         logger.info("Training error: {0:.4f},\tTest error: {1:.4f}\t\tTraining accuracy: {2:.4f}\tTest accuracy: {3:.4f}".format(epoch_trainig_error, epoch_test_error, epoch_training_accuracy, epoch_test_accuracy))
         
