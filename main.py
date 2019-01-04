@@ -77,7 +77,9 @@ def main():
 			
 			checkpoint = torch.load(checkpoint_path)
 				
-			net = Net(device).to(device)
+			net = Net(device, embedding_dim=args.embedding_dim,
+			rnn_hidden_size=args.rnn_size, rnn_layers=args.rnn_layers, rnn_dropout=args.rnn_dropout,
+			linear_out=args.linear_units, linear_dropout=args.dropout).to(device)
 			net.load_state_dict(checkpoint["model_state_dict"])
 			
 			optimizer = optim.Adam(net.parameters())

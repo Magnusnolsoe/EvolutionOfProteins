@@ -10,7 +10,7 @@ plt.style.use('ggplot')
 
 filenames = None
 
-result_dir = 'results'
+result_dir = 'results2'
 
 def epoch_error(seq, num=20):
 	avg = len(seq) / float(num)
